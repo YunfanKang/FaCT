@@ -1,4 +1,4 @@
-package org.geotools.tutorial;
+package edu.ucr.gmp;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
