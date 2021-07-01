@@ -6,6 +6,7 @@ import org.geotools.data.FeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
@@ -17,16 +18,34 @@ import java.util.*;
 
 public class MaxP {
     public static void main(String[] args) throws Exception {
-        int[] tList = {1000, 5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000}; //List of threshold
+        // display a data store file chooser dialog for shapefiles
+        //File file = JFileDataStoreChooser.showOpenFile("shp", null);
+        //if (file == null) {
+           // return;
+       // }
+        int[] tList = {1000, 10000, 20000,  30000,  40000};
+        //int[] tList = {1000};
+        //int[] tList = {20000};
+        String files[] = {"data/LACity/LACity.shp", "data/LACounty/La_county_noisland.shp", "data/SouthCal/SouthCal_noisland.shp", "data/Cal/Cal_noisland.shp"};
+        String fileNames[] = {"LACity", "LACounty", "SCA", "CA"};
+        System.out.println("MP-Regions with different SUM threshold:");
         for(int i = 0; i < tList.length; i++){
-            System.out.println(tList[i]+ "： ");
-            set_input(tList[i]);
+            System.out.println("(" +tList[i]+ ", inf)： ");
+            set_input(tList[i], files[1]);
+            System.out.println();
         }
+        System.out.println();
+        System.out.println("Scability:");
+            for(int i = 0; i < files.length; i++){
+                System.out.println(fileNames[i] + ": ");
+                set_input(20000, files[i]);
+            }
+
     }
-    public static void  set_input(int threshold) throws Exception {
+    public static void  set_input(int threshold, String fileName) throws Exception {
         double startTime = System.currentTimeMillis()/1000.0;
         //File file = new File("data/larger_datasets/Archive/10K/10K.shp");
-        File file = new File("data/SCA/SouthCal_noisland.shp");     //  Specify the dataset
+        File file = new File(fileName);
         Map<String, Object> map = new HashMap<>();
         map.put("url", file.toURI().toURL());
 
@@ -48,8 +67,8 @@ public class MaxP {
                 SimpleFeature feature = features.next();
                 //System.out.print(feature.getID());
                 //System.out.print(": ");
-                population.add(Long.parseLong(feature.getAttribute("pop2010").toString())); //Specify the spatially extensive attribute
-                income.add(Long.parseLong(feature.getAttribute("households").toString()));  //Specify the dissimilarity attribute
+                population.add(Long.parseLong(feature.getAttribute("pop2010").toString()));
+                income.add(Long.parseLong(feature.getAttribute("households").toString()));
                 fList.add(feature);
                 //System.out.println(feature.getID());
                 idList.add(Integer.parseInt(feature.getID().split("\\.")[1]) - 1);
