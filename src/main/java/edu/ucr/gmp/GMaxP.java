@@ -1,4 +1,4 @@
-package edu.ucr.gmp;
+package org.geotools.tutorial;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
@@ -17,54 +17,911 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-public class GMaxP{
+public class GMaxP {
     static boolean debug = false;
-    //static boolean labelCheck = true;
-    static int numOfIts = 3;    //Number of iterations the construction phase executes
-    static int randFlag[] = {1,1};  //The randomness for the AVG and SUM step, 0 for sequential order, 1 for random, 2 for seeking the best
-    static int mergeLimit = 3;  //Merge limit for the AVG step
-    static String testName = "TestOfMergeLimit"; //The experiment results will be stored in data/AlgorithmTesting
+    static boolean labelCheck = true;
+    static int numOfIts = 3;
+    static int randFlag[] = {1,1};
+    static int rand[] = {0, 1, 2};
+    static String rands[] = {"S", "R", "B"};
+    static int mergeLimit = 3;
+    static String testName = "RandWithMergeLimit";
 
     static double minTime = 0;
     static double avgTime = 0;
     static double sumTime = 0;
-    public static void main(String[] args) throws Exception {
-        //Specify the ranges for constraints
-        Double[] minlower = {-Double.POSITIVE_INFINITY, -Double.POSITIVE_INFINITY,-Double.POSITIVE_INFINITY,-Double.POSITIVE_INFINITY};
-        Double[] minupper = {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,3000.0, 3000.0};
-        Double[] avglower = {1500.0};
-        Double[] avgupper = {4500.0};
-        Double[] sumlower = {-Double.POSITIVE_INFINITY};
-        Double[] sumupper = {Double.POSITIVE_INFINITY};
+    static Double[] minlower = {-Double.POSITIVE_INFINITY, 2000.0,3500.0,5000.0, 2500.0, 2000.0, 1500.0, 1000.0, 500.0, 1500.0, 2500.0, 3500.0};
+    static Double[] minupper = {Double.POSITIVE_INFINITY, 2000.0,3500.0, 5000.0, 3500.0, 4000.0, 4500.0, 5000.0, 2500.0, 3500.0, 4500.0, 5500.0};
+    static Double[] avglower = {2500.0, 2000.0, 1500.0, 1000.0};
+    static Double[] avgupper = {3500.0, 4000.0, 4500.0, 5000.0};
+    static Double[] sumlower = {1000.0, 10000.0, 20000.0, 30000.0, 40000.0, 50000.0, 15000.0, 10000.0, 5000.0};
+    static Double[] sumupper = {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 25000.0, 30000.0, 35000.0};
 
-        String files[] = { "data/LACity/LACity.shp", "data/LACounty/LACounty.shp"}; //Datasets in the data drectory
+    static String lac = "data/LACounty/La_county_noisland.shp";
+    static String files[] = {"data/LACity/LACity.shp", "data/LACounty/La_county_noisland.shp", "data/SouthCal/SouthCal_noisland.shp", "data/Cal/Cal_noisland.shp"};
+    static String fileNames[] = {"LACity", "LACounty", "SCA", "CA"};
 
+    static void experimentMinUpper() throws Exception{
+        System.out.println("Experiment 1: MIN with a open lower bound:");
 
-        //Read the data and specify the attribute for each constraint
-            for(int i = 1 ; i < 11; i++){
-                //mergeLimit = i;
-                for(String shpFile: files){
-                    set_input(shpFile,
-                            "pop_16up",
-                            minlower[0],
-                            minupper[0],
-                            "unemployed",
-                            -Double.POSITIVE_INFINITY,
-                            Double.POSITIVE_INFINITY,
-                            "employed",
-                            avglower[0],
-                            avgupper[0],
-                            "pop2010",
-                            sumlower[0],
-                            sumupper[0],
-                            -Double.POSITIVE_INFINITY,
-                            Double.POSITIVE_INFINITY,
-                            "households"
-                    );
+        System.out.println("M:");
+        for(int i = 1; i < 4; i++){
+            System.out.println("(-inf, " + minupper[i] + ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
 
+        System.out.println("MS:");
+        for(int i = 1; i < 4; i++){
+            System.out.println("(-inf, " + minupper[i] + ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MA:");
+        for(int i = 1; i < 4; i++){
+            System.out.println("(-inf, " + minupper[i] + ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MAS:");
+        for(int i = 1; i < 4; i++){
+            System.out.println("(-inf, " + minupper[i] + ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+    }
 
-                }
+    static void experimentMinLower() throws Exception{
+        System.out.println("Experiment 2: MIN with a open upper bound:");
+
+        System.out.println("M:");
+        for(int i = 1; i < 4; i++){
+            System.out.println("(" + minlower[i] + ", inf)");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+
+        System.out.println("MS:");
+        for(int i = 1; i < 4; i++){
+            System.out.println("(" + minlower[i] + ", inf)");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MA:");
+        for(int i = 1; i < 4; i++){
+            System.out.println("(" + minlower[i] + ", inf)");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MAS:");
+        for(int i = 1; i < 4; i++){
+            System.out.println("(" + minlower[i] + ", inf)");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+    }
+    static void experimentMinRangeSize() throws Exception{
+        System.out.println("Experiment 3: MIN with changing range length:");
+
+        System.out.println("M:");
+        for(int i = 4; i < 8; i++){
+            System.out.println("(" + minlower[i] + ", " + minupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+
+        System.out.println("MS:");
+        for(int i = 4; i < 8; i++){
+            System.out.println("(" + minlower[i] + ", " + minupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MA:");
+        for(int i = 4; i < 8; i++){
+            System.out.println("(" + minlower[i] + ", " + minupper[i] + ")");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MAS:");
+        for(int i = 4; i < 8; i++){
+            System.out.println("(" + minlower[i] + ", " + minupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+    }
+    static void experimentMinRangePos() throws Exception{
+        System.out.println("Experiment 4: MIN with changing range midpoint:");
+
+        System.out.println("M:");
+        for(int i = 8; i < 12; i++){
+            System.out.println("(" + minlower[i] + ", " + minupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+
+        System.out.println("MS:");
+        for(int i = 8; i < 12; i++){
+            System.out.println("(" + minlower[i] + ", " + minupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MA:");
+        for(int i = 8; i < 12; i++){
+            System.out.println("(" + minlower[i] + ", " + minupper[i] + ")");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MAS:");
+        for(int i = 8; i < 12; i++){
+            System.out.println("(" + minlower[i] + ", " + minupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    minlower[i],
+                    minupper[i],
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+    }
+    static void experimentSumLower() throws Exception{
+        System.out.println("Experiment 5: SUM with an open upper bound:");
+
+        System.out.println("S:");
+        for(int i = 0; i < 4; i++){
+            System.out.println("(" + sumlower[i] + ", inf)");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    sumlower[i],
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+
+        System.out.println("MS:");
+        for(int i = 0; i < 4; i++){
+            System.out.println("(" + sumlower[i] + ", inf)");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    sumlower[i],
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("AS:");
+        for(int i = 0; i < 4; i++){
+            System.out.println("(" + sumlower[i] + ", inf)");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    sumlower[i],
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MAS:");
+        for(int i = 0; i < 4; i++){
+            System.out.println("(" + sumlower[i] + ", inf)");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    sumlower[i],
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+    }
+    static void experimentSumRange() throws Exception{
+        System.out.println("Experiment 6: SUM with different range lengths:");
+
+        System.out.println("S:");
+        for(int i = 6; i < 9; i++){
+            System.out.println("(" + sumlower[i] + ", " +  sumupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    sumlower[i],
+                    sumupper[i],
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+
+        System.out.println("MS:");
+        for(int i = 6; i < 9; i++){
+            System.out.println("(" + sumlower[i] + ", " +  sumupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    sumlower[i],
+                    sumupper[i],
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("AS:");
+        for(int i = 6; i < 9; i++){
+            System.out.println("(" + sumlower[i] + ", " +  sumupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    sumlower[i],
+                    sumupper[i],
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MAS:");
+        for(int i = 6; i < 9; i++){
+            System.out.println("(" + sumlower[i] + ", " +  sumupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    sumlower[i],
+                    sumupper[i],
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+    }
+
+    static void experimentAvgRange() throws Exception{
+        System.out.println("Experiment 7: AVG with different range lengths:");
+
+        System.out.println("A:");
+        for(int i = 0; i < 4; i++){
+            System.out.println("(" + avglower[i] + ", " +  avgupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    avglower[i],
+                    avgupper[i],
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+
+        System.out.println("MA:");
+        for(int i = 0; i < 4; i++){
+            System.out.println("(" + avglower[i] + ", " +  avgupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    avglower[i],
+                    avgupper[i],
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("AS:");
+        for(int i = 0; i < 4; i++){
+            System.out.println("(" + avglower[i] + ", " +  avgupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    avglower[i],
+                    avgupper[i],
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MAS:");
+        for(int i = 0; i < 4; i++){
+            System.out.println("(" + avglower[i] + ", " +  avgupper[i]+ ")");
+            set_input(lac,
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    avglower[i],
+                    avgupper[i],
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+    }
+
+    static void scalibilityWithoutAvg() throws Exception{
+        System.out.println("Experiment 8: Scability for constraints without AVG:");
+
+        System.out.println("M:");
+        for(int i = 0; i < 4; i++){
+            System.out.println(fileNames[i] + ": ");
+            set_input(files[i],
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("S:");
+        for(int i = 0; i < 4; i++){
+            System.out.println(fileNames[i] + ": ");
+            set_input(files[i],
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MS:");
+        for(int i = 0; i < 4; i++){
+            System.out.println(fileNames[i] + ": ");
+            set_input(files[i],
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+    }
+
+    static void scalibilityWithAvg() throws Exception{
+        System.out.println("Experiment 8: Scability for constraints without AVG:");
+
+        System.out.println("A:");
+        for(int i = 0; i < 3; i++){
+            System.out.println(fileNames[i] + ": ");
+            set_input(files[i],
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MA:");
+        for(int i = 0; i < 3; i++){
+            System.out.println(fileNames[i] + ": ");
+            set_input(files[i],
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("AS:");
+        for(int i = 0; i < 3; i++){
+            System.out.println(fileNames[i] + ": ");
+            set_input(files[i],
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+        System.out.println("MAS:");
+        for(int i = 0; i < 3; i++){
+            System.out.println(fileNames[i] + ": ");
+            set_input(files[i],
+                    "pop_16up",
+                    -Double.POSITIVE_INFINITY,
+                    3000.0,
+                    "unemployed",
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "employed",
+                    2000.0,
+                    4000.0,
+                    "pop2010",
+                    20000.0,
+                    Double.POSITIVE_INFINITY,
+                    -Double.POSITIVE_INFINITY,
+                    Double.POSITIVE_INFINITY,
+                    "households"
+            );
+        }
+    }
+
+    static void selectionCriteria() throws Exception{
+        System.out.println("Experiment 9: Area selection criteria");
+
+        for(int j = 0; j < 3; j++){
+            System.out.println(rands[j] + "R: ");
+            randFlag[0] = rand[j];
+            for(int i = 0; i < 3; i++){
+                System.out.println(fileNames[i] + ": ");
+                set_input(files[i],
+                        "pop_16up",
+                        -Double.POSITIVE_INFINITY,
+                        3000.0,
+                        "unemployed",
+                        -Double.POSITIVE_INFINITY,
+                        Double.POSITIVE_INFINITY,
+                        "employed",
+                        2000.0,
+                        4000.0,
+                        "pop2010",
+                        -Double.POSITIVE_INFINITY,
+                        20000.0,
+                        -Double.POSITIVE_INFINITY,
+                        Double.POSITIVE_INFINITY,
+                        "households"
+                );
             }
+        }
+
+        randFlag[0] = 1;
+        for(int j = 0; j < 3; j++){
+            System.out.println("R" + rands[j] + ": ");
+            randFlag[1] = rand[j];
+            for(int i = 0; i < 3; i++){
+                System.out.println(fileNames[i] + ": ");
+                set_input(files[i],
+                        "pop_16up",
+                        -Double.POSITIVE_INFINITY,
+                        3000.0,
+                        "unemployed",
+                        -Double.POSITIVE_INFINITY,
+                        Double.POSITIVE_INFINITY,
+                        "employed",
+                        2000.0,
+                        4000.0,
+                        "pop2010",
+                        -Double.POSITIVE_INFINITY,
+                        20000.0,
+                        -Double.POSITIVE_INFINITY,
+                        Double.POSITIVE_INFINITY,
+                        "households"
+                );
+            }
+        }
+
+    }
+
+    static void mergeLimit() throws Exception{
+        System.out.println("Experiment 10: Merge limit");
+        for (int j = 0; j < 4; j++){
+            System.out.println("AVG range: (" + avglower[j] + ", " + avgupper[j] + ")");
+            for(int i = 0; i < 10; i++){
+                mergeLimit = i;
+                System.out.println("Merge Limit = " + mergeLimit);
+                randFlag[1] = rand[i];
+                set_input(lac,
+                        "pop_16up",
+                        -Double.POSITIVE_INFINITY,
+                        3000.0,
+                        "unemployed",
+                        -Double.POSITIVE_INFINITY,
+                        Double.POSITIVE_INFINITY,
+                        "employed",
+                        avglower[j],
+                        avgupper[j],
+                        "pop2010",
+                        -Double.POSITIVE_INFINITY,
+                        20000.0,
+                        -Double.POSITIVE_INFINITY,
+                        Double.POSITIVE_INFINITY,
+                        "households"
+                );
+            }
+        }
+
+    }
+
+    public static void main(String[] args) throws Exception {
+        experimentMinUpper();
+        experimentMinLower();
+        experimentMinRangeSize();
+        experimentMinRangePos();
+        experimentAvgRange();
+        experimentSumLower();
+        experimentSumRange();
+        scalibilityWithoutAvg();
+        scalibilityWithAvg();
+        selectionCriteria();
+        mergeLimit();
 
 
     }
@@ -196,7 +1053,7 @@ public class GMaxP{
 
         //System.out.println(minX + " " + minY + ", " + maxX + " " + maxY);
         double rookstartTime = System.currentTimeMillis()/ 1000.0;
-        System.out.println("Time for reading the file: " + (rookstartTime - startTime));
+        //System.out.println("Time for reading the file: " + (rookstartTime - startTime));
         SpatialGrid sg = new SpatialGrid(minX, minY, maxX, maxY);
         sg.createIndex(45, fList);
         sg.calculateContiguity(fList);
@@ -205,7 +1062,7 @@ public class GMaxP{
         System.out.println("Rook time: " + (rookendTime - rookstartTime));
 
         double dataLoadTime = System.currentTimeMillis()/ 1000.0;
-        System.out.println(distAttr.size());
+        System.out.println("Input size: " + distAttr.size());
         long [][] distanceMatrix = Tabu.pdist(distAttr);
         Date t = new Date();
 
@@ -214,7 +1071,7 @@ public class GMaxP{
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 
         String timeStamp = df.format(t);
-        String folderName = "data/AlgorithmTesting/MergeLimit/MergeLimt"+mergeLimit+"_"+testName +"_" +randFlag[0] + "," +randFlag[1] +"_Tabu_" + mapName + "_MIN-" + minAttrLow + "-" + minAttrHigh + "_AVG-" + avgAttrLow + "-" + avgAttrHigh + "_SUM-" +sumAttrLow + "-" + sumAttrHigh + "-" + timeStamp;
+        String folderName = "data/AlgorithmTesting/FaCT_" + mapName + "_MIN-" + minAttrLow + "-" + minAttrHigh + "_AVG-" + avgAttrLow + "-" + avgAttrHigh + "_SUM-" +sumAttrLow + "-" + sumAttrHigh + "-" + timeStamp;
         File folder = new File(folderName);
         folder.mkdirs();
         File settingFile = new File(folderName + "/Settings.csv");
@@ -279,7 +1136,8 @@ public class GMaxP{
             int tabuLength = 10;
             int max_no_move = distAttr.size();
             //checkLabels(rc.getLabels(), rc.getRegionList());
-            //To be updated
+
+            //System.out.println("Start tabu");
 
             TabuReturn tr = Tabu.performTabu(rc.getLabels(), rc.getRegionList(), sg, Tabu.pdist((distAttr)), tabuLength, max_no_move, minAttr, maxAttr, sumAttr, avgAttr);
             int[] labels = tr.labels;
@@ -304,11 +1162,17 @@ public class GMaxP{
                 }
             }
             w.close();
-            System.out.println("minTime: " + minTime);
-            System.out.println("avgTime: " + avgTime);
-            System.out.println("sumTime: " + sumTime);
+            //System.out.println("minTime: " + minTime);
+            //System.out.println("avgTime: " + avgTime);
+            //System.out.println("sumTime: " + sumTime);
 
-            System.out.println(i + ", " + max_p + ", " + constructionDuration + ", " + heuristicDuration + ", " + (constructionDuration+heuristicDuration) + ", " + totalWDS + ", " + tr.WDS + ", " + WDSDifference + "," + unassignedCount + "\n");
+            System.out.println("Iteration: " + i);
+            System.out.println("p: "+ max_p);
+            System.out.println("Construction time: " + constructionDuration);
+            System.out.println("Tabu search time: " + heuristicDuration);
+            System.out.println("Heterogeneity score before Tabu: "  + totalWDS);
+            System.out.println("Heterogeneity score after Tabu: " + tr.WDS);
+            System.out.println("Number of unassigned areas: " + unassignedCount + "\n");
 
             csvWriter.write(i + ", " + max_p + ", " + constructionDuration + ", " + heuristicDuration + ", " + (constructionDuration+heuristicDuration) + ", " + totalWDS + ", " + tr.WDS + ", " + WDSDifference + "," + unassignedCount +"," + minTime + "," + avgTime + "," + sumTime + "\n");
             csvWriter.flush();
@@ -318,7 +1182,7 @@ public class GMaxP{
 
         }
         csvWriter.close();
-
+        //System.out.println("End of setipnput");
 
     }
 
