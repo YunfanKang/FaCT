@@ -1,6 +1,6 @@
 # FaCT
 
-The three-phase greedy algorithm for solving the generalized max-p-regions problem.
+The three-phase greedy algorithm for solving the enriched max-p-regions problem.
 
 ## Code and Data
 1. The repository contains a project that can be imported by the IntelliJ IDEA. 
