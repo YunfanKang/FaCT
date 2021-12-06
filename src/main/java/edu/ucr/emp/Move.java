@@ -1,4 +1,4 @@
-package edu.ucr.gmp;
+package edu.ucr.emp;
 
 public class Move{
     public Integer area;
