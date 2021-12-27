@@ -955,9 +955,11 @@ public class EMP {
         }
 
     }
-
+    public static String returnTrue(){
+        return "TRUE!";
+    }
     public static void main(String[] args) throws Exception {
-        //experimentMinUpper();
+        experimentMinUpper();
         //experimentMinLower();
        //experimentMinRangeSize();
        // experimentMinRangePos();
@@ -968,8 +970,8 @@ public class EMP {
         //scalibilityWithAvg();
        // selectionCriteria();
         //mergeLimit();
-        scalibility3V5();
-
+        //scalibility3V5();
+        System.out.println("End of execution for EMP");
 
     }
     public static void  set_input(String fileName,
