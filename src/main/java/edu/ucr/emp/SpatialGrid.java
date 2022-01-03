@@ -30,8 +30,6 @@ public class SpatialGrid{
         FeatureSource<SimpleFeatureType, SimpleFeature> source =
                 dataStore.getFeatureSource(typeName);
         Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
-        ArrayList<Integer> population = new ArrayList<>();
-        ArrayList<Integer> income = new ArrayList<>();
         ArrayList<SimpleFeature> fList = new ArrayList<>();
         ArrayList<Integer> idList = new ArrayList<>();
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
@@ -97,12 +95,22 @@ public class SpatialGrid{
         }
     }
     double minX, minY, maxX, maxY;
-    private Map<Integer, Set<Integer>> grid_area, area_grid, neighbors;
+    private Map<Integer, Set<Integer>> grid_area;
+    private Map<Integer, Set<Integer>> area_grid;
+    Map<Integer, Set<Integer>> neighbors;
     public SpatialGrid(double minx, double miny, double maxx, double maxy){
         minX = minx;
         minY = miny;
         maxX = maxx + 1;
         maxY = maxy + 1;
+        grid_area = new HashMap<Integer, Set<Integer>>();
+        area_grid = new HashMap<Integer, Set<Integer>>();
+    }
+    public SpatialGrid(){
+        minX = -1;
+        minY = -1;
+        maxX = -1;
+        maxY = -1;
         grid_area = new HashMap<Integer, Set<Integer>>();
         area_grid = new HashMap<Integer, Set<Integer>>();
     }
@@ -217,5 +225,8 @@ public class SpatialGrid{
             System.out.println();
         }
 
+    }
+    public void setNeighbors(Map<Integer, Set<Integer>> n){
+        this.neighbors = n;
     }
 }
